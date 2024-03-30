@@ -1,0 +1,36 @@
+---
+# tasks file for roles/apache
+- name: Install Apache web server
+  ansible.builtin.package:
+    name: ""
+    state: present
+
+- name: Ensure Apache is running and enabled
+  ansible.builtin.service:
+    name: ""
+    state: started
+    enabled: true
+
+- name: Install firewalld
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: Ensure firewalld is running
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Allow HTTPS traffic on web servers
+  ansible.posix.firewalld:
+    service: https
+    permanent: true
+    state: enabled
+  when: inventory_hostname in groups['web']
+  notify: Reload Firewall
+
+- name: Deploy custom index.html
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
